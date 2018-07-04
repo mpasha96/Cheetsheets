@@ -1,0 +1,229 @@
+SQL keywords are NOT case sensitive: select is the same as SELECT.
+
+The SELECT DISTINCT statement is used to return only distinct (different) values.
+SELECT COUNT(DISTINCT Country) FROM Customers;
+
+selects all fields from "Customers" where country is NOT "Germany" and NOT "USA":
+SELECT * FROM Customers WHERE NOT Country='Germany' AND NOT Country='USA';
+
+selects all customers from the "Customers" table, sorted ascending by the "Country" and descending by the "CustomerName" column
+SELECT * FROM Customers ORDER BY Country ASC, CustomerName DESC;
+
+inserts a new record in the "Customers" table:
+INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
+VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
+
+Always use IS NULL to look for NULL values.
+SELECT LastName, FirstName, Address FROM Persons
+WHERE Address IS NULL;
+
+statement updates the first customer (CustomerID = 1) with a new contact person and a new city.
+If you omit the WHERE clause, all records in the table will be updated!
+UPDATE Customers
+SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
+WHERE CustomerID = 1;
+
+delete query
+DELETE FROM Customers WHERE CustomerName='Alfreds Futterkiste';
+It is possible to delete all rows in a table without deleting the table
+DELETE * FROM table_name;
+
+select specific recods
+SELECT * FROM Customers WHERE ROWNUM <= 3;
+
+max and min
+SELECT MAX(Price) AS LargestPrice FROM Products;
+
+count / avg /sum 
+SELECT COUNT(ProductID) FROM Products;
+SELECT AVG(Price) FROM Products;
+SELECT SUM(Quantity)FROM OrderDetails;
+
+using like
+WHERE CustomerName LIKE 'a%'	Finds any values that starts with "a"
+WHERE CustomerName LIKE '%a'	Finds any values that ends with "a"
+WHERE CustomerName LIKE '%or%'	Finds any values that have "or" in any position
+WHERE CustomerName LIKE '_r%'	Finds any values that have "r" in the second position
+WHERE CustomerName LIKE 'a_%_%'	Finds any values that starts with "a" and are at least 3 characters in length
+WHERE ContactName LIKE 'a%o'	Finds any values that starts with "a" and ends with "o"
+using not with like
+SELECT * FROM Customers WHERE City LIKE '[!bsp]%';
+
+The IN operator allows you to specify multiple values in a WHERE clause.
+SELECT * FROM Customers WHERE Country IN ('Germany', 'France', 'UK');
+
+The BETWEEN operator selects values within a given range. The values can be numbers, text, or dates. The BETWEEN operator is inclusive
+SELECT * FROM Products WHERE Price BETWEEN 10 AND 20;
+SELECT * FROM Orders WHERE OrderDate BETWEEN #07/04/1996# AND #07/09/1996#; date example
+
+using aliases
+SELECT CustomerID as ID, CustomerName AS Customer FROM Customers;
+The following SQL statement creates an alias named "Address" that combine four columns (Address, PostalCode, City and Country)
+SELECT CustomerName, Address + ', ' + PostalCode + ' ' + City + ', ' + Country AS Address FROM Customers;
+table aliases
+SELECT o.OrderID, o.OrderDate, c.CustomerName
+FROM Customers AS c, Orders AS o
+WHERE c.CustomerName="Around the Horn" AND c.CustomerID=o.CustomerID;
+
+
+Here are the different types of the JOINs in SQL:
+(INNER) JOIN: Returns records that have matching values in both tables
+LEFT (OUTER) JOIN: Return all records from the left table, and the matched records from the right table
+RIGHT (OUTER) JOIN: Return all records from the right table, and the matched records from the left table
+FULL (OUTER) JOIN: Return all records when there is a match in either left or right table
+
+inner joins:
+SELECT Orders.OrderID, Customers.CustomerName
+FROM Orders
+INNER JOIN Customers ON Orders.CustomerID = Customers.CustomerID;
+-----
+SELECT Orders.OrderID, Customers.CustomerName, Shippers.ShipperName
+FROM ((Orders
+INNER JOIN Customers ON Orders.CustomerID = Customers.CustomerID)
+INNER JOIN Shippers ON Orders.ShipperID = Shippers.ShipperID);
+
+left join:
+SELECT Customers.CustomerName, Orders.OrderID
+FROM Customers
+LEFT JOIN Orders ON Customers.CustomerID = Orders.CustomerID
+---
+the LEFT JOIN keyword returns all records from the left table (Customers), even if there are no matches in the right table (Orders).
+
+right join:
+SELECT Orders.OrderID, Employees.LastName, Employees.FirstName
+FROM Orders
+RIGHT JOIN Employees ON Orders.EmployeeID = Employees.EmployeeID
+
+full outer join: returns all rows of both tabkes
+SELECT Customers.CustomerName, Orders.OrderID
+FROM Customers
+FULL OUTER JOIN Orders ON Customers.CustomerID=Orders.CustomerID
+
+self join:
+SELECT A.CustomerName AS CustomerName1, B.CustomerName AS CustomerName2, A.City
+FROM Customers A, Customers B
+WHERE A.CustomerID <> B.CustomerID
+AND A.City = B.City 
+
+unioin query:
+SELECT City FROM Customers
+UNION
+SELECT City FROM Suppliers
+ORDER BY City;
+UNION selects only distinct values. Use UNION ALL to also select duplicate values!
+
+The GROUP BY statement is often used with aggregate functions (COUNT, MAX, MIN, SUM, AVG) to group the result-set by one or more columns.
+SELECT Shippers.ShipperName, COUNT(Orders.OrderID) AS NumberOfOrders FROM Orders
+LEFT JOIN Shippers ON Orders.ShipperID = Shippers.ShipperID
+GROUP BY ShipperName;
+
+The HAVING clause was added to SQL because the WHERE keyword could not be used with aggregate functions.
+SELECT COUNT(CustomerID), Country
+FROM Customers
+GROUP BY Country
+HAVING COUNT(CustomerID) > 5;
+
+The EXISTS operator is used to test for the existence of any record in a subquery.
+The EXISTS operator returns true if the subquery returns one or more records.
+SELECT SupplierName
+FROM Suppliers
+WHERE EXISTS (SELECT ProductName FROM Products WHERE SupplierId = Suppliers.supplierId AND Price < 20);
+
+crreating table:
+CREATE TABLE Persons (
+    PersonID int,
+    LastName varchar(255),
+    FirstName varchar(255),
+    Address varchar(255),
+    City varchar(255) 
+);
+creating table using othe rtable:
+CREATE TABLE new_table_name AS
+    SELECT column1, column2,...
+    FROM existing_table_name
+    WHERE ....;
+
+empty and del table:
+TRUNCATE TABLE table_name;
+DROP TABLE table_name;
+
+adding cols alter table:
+ALTER TABLE Persons
+ADD DateOfBirth date;
+----
+ALTER TABLE Persons
+ALTER COLUMN DateOfBirth year;
+
+constraints:
+The following constraints are commonly used in SQL:
+CREATE TABLE table_name (
+    column1 datatype constraint,
+    column2 datatype constraint,
+    column3 datatype constraint,
+    ....
+);
+NOT NULL - Ensures that a column cannot have a NULL value
+UNIQUE - Ensures that all values in a column are different
+PRIMARY KEY - A combination of a NOT NULL and UNIQUE. Uniquely identifies each row in a table
+FOREIGN KEY - Uniquely identifies a row/record in another table
+CHECK - Ensures that all values in a column satisfies a specific condition
+DEFAULT - Sets a default value for a column when no value is specified
+INDEX - Use to create and retrieve data from the database very quickly
+
+ create a UNIQUE constraint on the "ID" column when the table is already created, use the following SQL:
+ALTER TABLE Persons
+ADD UNIQUE (ID); --or DROP constraint name;
+
+primary key:
+CREATE TABLE Persons (
+    ID int NOT NULL PRIMARY KEY,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int
+);
+
+A FOREIGN KEY is a key used to link two tables together.A FOREIGN KEY in a table points to a PRIMARY KEY in another table.
+CREATE TABLE Orders (
+    OrderID int NOT NULL PRIMARY KEY,
+    OrderNumber int NOT NULL,
+    PersonID int FOREIGN KEY REFERENCES Persons(PersonID)
+);
+---
+ALTER TABLE ORDERS ADD FOREIGN KEY (CUSTOMERID) REFERENCES CUSTOMERS(CUSTOMERID);
+
+
+check constratint:
+CREATE TABLE Persons (
+    ID int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int CHECK (Age>=18)
+); 
+-----
+ALTER TABLE Persons
+ADD CHECK (Age>=18);
+
+default const:
+CREATE TABLE Orders (
+    ID int NOT NULL,
+    OrderNumber int NOT NULL,
+    OrderDate date DEFAULT GETDATE()
+);
+
+auto increment:
+CREATE TABLE Persons (
+    ID int NOT NULL AUTO_INCREMENT,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int,
+    PRIMARY KEY (ID)
+);
+
+
+views:
+CREATE VIEW [Current Product List] AS
+SELECT ProductID, ProductName
+FROM Products
+WHERE Discontinued = No;
+--and
+SELECT * FROM [Current Product List];
